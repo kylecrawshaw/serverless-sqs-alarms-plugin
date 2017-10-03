@@ -11,6 +11,7 @@ class Alarm {
     this.thresholds = alarm.thresholds
     this.name = alarm.name
     this.treatMissingData = alarm.treatMissingData
+    this.actions = alarm.actions
   }
 
   formatAlarmName (value) {
@@ -29,6 +30,21 @@ class Alarm {
 
   validateTreatMissingData (treatment) {
     let validTreamtments = ['missing', 'ignore', 'breaching', 'notBreaching']
+    if (validTreamtments.includes(treatment)) {
+      return treatment
+    }
+  }
+
+  resolveActions (index) {
+    if (this.actions.constructor === Array) {
+      return this.validateActions(this.actions[index])
+    } else {
+      return this.validateActions(this.actions)
+    }
+  }
+
+  validateActions (treatment) {
+    let validTreamtments = ['OK', 'ALARM', 'INSUFFICIENT'] 
     if (validTreamtments.includes(treatment)) {
       return treatment
     }
@@ -55,14 +71,42 @@ class Alarm {
               EvaluationPeriods: 1,
               Threshold: value,
               ComparisonOperator: 'GreaterThanOrEqualToThreshold',
-              AlarmActions: [
-                { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
-              ],
-              OKActions: [
-                { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
-              ]
+//              AlarmActions: [
+//                { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
+//              ],
+//              OKActions: [
+//                { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
+//              ]
             }
           }
+        }
+
+        if (this.actions) {
+          let action = this.resolveActions(i)
+          if (action === 'ALARM') {
+            config[this.formatAlarmName(value)].Properties.AlarmActions = [
+              { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
+            ]
+          }
+
+          if (action === 'OK') {
+            config[this.formatAlarmName(value)].Properties.OKActions = [
+              { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
+            ]
+          }
+
+          if (action === 'INSUFFICIENT') {
+            config[this.formatAlarmName(value)].Properties.InsufficientDataActions = [
+              { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
+            ]
+          }
+        } else {
+          config[this.formatAlarmName(value)].Properties.AlarmActions = [
+            { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
+          ]
+          config[this.formatAlarmName(value)].Properties.OKActions = [
+            { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
+          ]
         }
 
         if (this.name) {
