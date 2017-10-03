@@ -82,31 +82,24 @@ class Alarm {
         }
 
         if (this.actions) {
-          let action = this.resolveActions(i)
+          let functionArn = [
+            { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
+          ]
+          let action = this.validateActions(i)
           if (action === 'ALARM') {
-            config[this.formatAlarmName(value)].Properties.AlarmActions = [
-              { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
-            ]
+            config[this.formatAlarmName(value)].Properties.AlarmActions = functionArn
           }
 
           if (action === 'OK') {
-            config[this.formatAlarmName(value)].Properties.OKActions = [
-              { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
-            ]
+            config[this.formatAlarmName(value)].Properties.OKActions = functionArn
           }
 
           if (action === 'INSUFFICIENT') {
-            config[this.formatAlarmName(value)].Properties.InsufficientDataActions = [
-              { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
-            ]
+            config[this.formatAlarmName(value)].Properties.InsufficientDataActions = functionArn
           }
         } else {
-          config[this.formatAlarmName(value)].Properties.AlarmActions = [
-            { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
-          ]
-          config[this.formatAlarmName(value)].Properties.OKActions = [
-            { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
-          ]
+          config[this.formatAlarmName(value)].Properties.AlarmActions = functionArn
+          config[this.formatAlarmName(value)].Properties.OKActions = functionArn
         }
 
         if (this.name) {
