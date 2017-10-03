@@ -85,16 +85,16 @@ class Alarm {
           let functionArn = [
             { 'Fn::Join': [ '', [ 'arn:aws:sns:' + this.region + ':', { 'Ref': 'AWS::AccountId' }, ':' + this.topic ] ] }
           ]
-          let action = this.validateActions(i)
-          if (action === 'ALARM') {
+          //let action = this.validateActions(i)
+          if this.actions.includes('ALARM') {
             config[this.formatAlarmName(value)].Properties.AlarmActions = functionArn
           }
 
-          if (action === 'OK') {
+          if this.actions.include('OK') {
             config[this.formatAlarmName(value)].Properties.OKActions = functionArn
           }
 
-          if (action === 'INSUFFICIENT') {
+          if this.actions.include('INSUFFICIENT') {
             config[this.formatAlarmName(value)].Properties.InsufficientDataActions = functionArn
           }
         } else {
